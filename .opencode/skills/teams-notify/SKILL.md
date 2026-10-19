@@ -1,21 +1,23 @@
 ---
 name: Teams Notify
-description: Configura um plugin local do OpenCode para enviar ao Microsoft Teams uma notificação quando uma execução terminar, usando um webhook em TEAMS_WEBHOOK_URL.
+description: Envia manualmente uma mensagem ao Microsoft Teams usando um Adaptive Card e o webhook definido em TEAMS_WEBHOOK_URL.
 metadata:
   opencode/autoinvoke: false
 ---
 
 # Teams Notify
 
-Use esta skill quando o usuário invocar `@{teams-notify}` para configurar, testar ou ajustar uma notificação do OpenCode para o Microsoft Teams.
+Use esta skill quando o usuário invocar `@{teams-notify}` para enviar uma mensagem manual, testar ou ajustar a integração com o Microsoft Teams.
 
 ## Formas de uso
 
-- `@{teams-notify} configure`: instala ou atualiza o plugin local no projeto atual.
+- `@{teams-notify} <mensagem>`: envia a mensagem informada para o Teams.
 - `@{teams-notify} test`: envia uma notificação de teste pelo webhook configurado.
 - `@{teams-notify}`: interpreta a intenção descrita pelo usuário e executa a operação correspondente.
 
-Depois da configuração, o plugin envia a notificação automaticamente. O usuário não precisa invocar a skill ao final de cada execução.
+Esta skill é manual. Ela não monitora sessões nem envia notificações automaticamente.
+
+Se existir `.opencode/plugins/teams-notifier/index.ts` criado por uma versão anterior desta skill, trate-o como uma instalação antiga de notificação automática: inspecione-o antes de manter, remover ou substituir para evitar mensagens duplicadas.
 
 ## Segurança
 
@@ -24,14 +26,40 @@ Depois da configuração, o plugin envia a notificação automaticamente. O usu�
 3. Nunca inclua o valor da URL em respostas ou saídas de comandos.
 4. Se a URL aparecer em um chat, log ou commit, recomende regenerar o webhook.
 
-## Procedimento de configuração
+## Procedimento de envio
 
 1. Verifique se `TEAMS_WEBHOOK_URL` está definida sem imprimir seu valor.
-2. Leia `templates/teams-notifier/index.ts` desta skill.
-3. Crie ou atualize `.opencode/plugins/teams-notifier/index.ts` no projeto atual com o conteúdo do template.
-4. Preserve alterações locais existentes no projeto; não sobrescreva um plugin diferente sem inspecioná-lo.
-5. Explique que o plugin é local, usa apenas `fetch` e é carregado automaticamente pelo OpenCode.
-6. Oriente o usuário a reiniciar ou recarregar o OpenCode para carregar o plugin.
+2. Preserve a mensagem informada pelo usuário, sem inventar conteúdo adicional.
+3. Envie um Adaptive Card para o webhook usando `curl` ou uma biblioteca padrão disponível no ambiente.
+4. Não crie plugin, arquivo de configuração ou variável persistente para um envio manual.
+
+Uma implementação sem dependências externas pode usar a biblioteca padrão do Python:
+
+```bash
+python3 - "$MENSAGEM" <<'PY'
+import json
+import os
+import sys
+import urllib.request
+
+payload = {
+    "$schema": "http://adaptivecards.io/schemas/adaptive-card.json",
+    "type": "AdaptiveCard",
+    "version": "1.2",
+    "body": [{"type": "TextBlock", "text": sys.argv[1], "wrap": True}],
+}
+
+request = urllib.request.Request(
+    os.environ["TEAMS_WEBHOOK_URL"],
+    data=json.dumps(payload).encode(),
+    headers={"Content-Type": "application/json"},
+    method="POST",
+)
+
+with urllib.request.urlopen(request) as response:
+    print(f"HTTP_STATUS={response.status}")
+PY
+```
 
 ## Procedimento de teste
 
@@ -61,7 +89,7 @@ Payload de teste:
 
 ## Contrato do workflow
 
-O workflow deve usar uma ação do Teams que aceite Adaptive Card, como `PostCardToConversation`. O plugin envia o cartão completo, não um objeto simples `{ "text": "..." }`.
+O workflow deve usar uma ação do Teams que aceite Adaptive Card, como `PostCardToConversation`. A skill envia o cartão completo, não um objeto simples `{ "text": "..." }`.
 
 Se o workflow usar uma ação de mensagem simples, adapte o template para enviar somente o texto. Não altere o payload sem verificar qual operação do Teams está configurada.
 
@@ -69,9 +97,7 @@ Se o workflow usar uma ação de mensagem simples, adapte o template para enviar
 
 Ao terminar, informe:
 
-- se o plugin foi criado ou atualizado;
-- o caminho do arquivo criado;
+- se a mensagem foi enviada;
 - se `TEAMS_WEBHOOK_URL` estava configurada, sem revelar o valor;
-- como reiniciar/recarregar o OpenCode;
 - o resultado do teste, quando solicitado;
 - que a entrega no Teams ainda precisa ser confirmada visualmente quando o webhook retornar apenas `202`.
