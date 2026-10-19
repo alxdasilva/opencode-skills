@@ -143,7 +143,15 @@ Considere como candidatos comentários cujo login ou nome contenha, sem diferenc
 
 Para cada candidato, informe autor, tipo, arquivo/linha quando disponível, URL e texto completo. Verifique também comentários novos desde a última execução quando houver um PR reutilizado; não omita comentários antigos que ainda estejam abertos ou sem resolução.
 
-Não responda, resolva nem altere código por causa desses comentários. Apresente-os ao usuário para decisão, encerre sem enviar Teams e aguarde uma nova execução da skill depois que forem resolvidos.
+Classifique cada comentário antes de decidir se ele bloqueia a notificação:
+
+- **Informativo/aprovado**: não bloqueia. Inclui revisão aprovada, recomendação de aprovação, confirmação de que não há problemas e mensagens como `No open issues`;
+- **Quality Gate aprovado**: não bloqueia. No Sonar, inclui `Quality Gate passed`, zero novos problemas, zero security hotspots e gates de cobertura/duplicação aprovados;
+- **Acionável/bloqueante**: bloqueia. Inclui solicitação de correção, bug, vulnerabilidade, regressão, hotspot pendente, Quality Gate falho ou thread não resolvida que exige alteração.
+
+Somente comentários acionáveis ou bloqueantes impedem a notificação. Comentários positivos e informativos devem aparecer no relatório, mas não devem ser tratados como pendências.
+
+Não responda, resolva nem altere código por causa de comentários acionáveis. Apresente-os ao usuário para decisão, encerre sem enviar Teams e aguarde uma nova execução da skill depois que forem resolvidos. Se todos os comentários forem informativos/aprovados, continue para a notificação automática.
 
 ### 7. Notificação automática do Teams
 
@@ -153,7 +161,7 @@ Só execute esta etapa se todas as anteriores tiverem terminado com sucesso:
 - push concluído;
 - PR criado ou reutilizado;
 - todos os checks aprovados;
-- nenhum comentário pendente do Copilot ou Sonar;
+- nenhum comentário acionável ou bloqueante pendente do Copilot ou Sonar;
 - nenhuma interrupção, falha ou conflito.
 
 Se `TEAMS_WEBHOOK_URL` não estiver configurada, informe que o PR foi concluído, mas a notificação foi omitida. Não trate a ausência do webhook como falha do PR.
