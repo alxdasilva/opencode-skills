@@ -43,6 +43,30 @@ Classifique o tipo do projeto para a mensagem final examinando o repositório e 
 - `backend` para APIs, serviços, jobs ou infraestrutura de backend;
 - use o tipo mais específico que o repositório declarar.
 
+### Preservar o fluxo padrão de abertura de PR
+
+Antes de criar ou atualizar um Pull Request, procure e respeite os mecanismos oficiais já existentes no repositório, incluindo:
+
+- `.github/PULL_REQUEST_TEMPLATE.md`;
+- `.github/pull_request_template.md`;
+- scripts de abertura ou atualização de PR;
+- comandos documentados no `README`;
+- workflows, automações ou convenções específicas do projeto.
+
+Não substitua, remova, sobrescreva ou contorne o script padrão de abertura de PR. O fluxo existente é a fonte de verdade do repositório.
+
+Se existir um script oficial para abrir o PR:
+
+1. use esse script em vez de criar um fluxo paralelo;
+2. preserve todos os campos, seções e checklists definidos por ele;
+3. informe a categoria `ship`, `show` ou `ask` no formato esperado pelo repositório;
+4. preserve a label correspondente;
+5. preserve as regras de auto-merge;
+6. para `ask`, mantenha o auto-merge desabilitado;
+7. não remova ou altere o template para simplificar a abertura.
+
+A skill pode preencher o template e acrescentar informações necessárias, mas não deve alterar sua estrutura padrão. Se o script ou template não permitir incluir alguma informação necessária, pare e informe a incompatibilidade. Não crie uma alternativa silenciosa nem abra o PR ignorando o fluxo oficial.
+
 Execute:
 
 ```bash
@@ -110,6 +134,8 @@ Se existir, reutilize-o. Caso contrário, gere um corpo objetivo com resumo, tes
 ```bash
 gh pr create --base <default-branch> --head <current-branch> --title "<title>" --body "<body>"
 ```
+
+Use `gh pr create` diretamente somente quando o repositório não possuir um script ou mecanismo oficial de abertura de PR. Quando existir um mecanismo oficial, execute-o e preserve seu template, checklist, categoria e regras de auto-merge.
 
 O título deve ser derivado dos commits da branch. O corpo deve registrar honestamente os testes executados; não declare testes que não foram executados.
 
