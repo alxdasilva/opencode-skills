@@ -2,6 +2,12 @@
 
 Skills pessoais para o OpenCode, inicialmente focadas no fluxo de Pull Requests.
 
+[![Versão](https://img.shields.io/github/v/release/alxdasilva/opencode-skills?label=vers%C3%A3o)](https://github.com/alxdasilva/opencode-skills/releases)
+
+> 🚀 **Versão atual: `v0.1.0`**
+>
+> Consulte o [CHANGELOG](CHANGELOG.md) para ver as novidades desta versão.
+
 ## Skills
 
 ### `check-rebase`
