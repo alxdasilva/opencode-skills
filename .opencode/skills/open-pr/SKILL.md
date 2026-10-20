@@ -43,6 +43,30 @@ Classifique o tipo do projeto para a mensagem final examinando o repositório e 
 - `backend` para APIs, serviços, jobs ou infraestrutura de backend;
 - use o tipo mais específico que o repositório declarar.
 
+### Preservar o fluxo padrão de abertura de PR
+
+Antes de criar ou atualizar um Pull Request, procure e respeite os mecanismos oficiais já existentes no repositório, incluindo:
+
+- `.github/PULL_REQUEST_TEMPLATE.md`;
+- `.github/pull_request_template.md`;
+- scripts de abertura ou atualização de PR;
+- comandos documentados no `README`;
+- workflows, automações ou convenções específicas do projeto.
+
+Não substitua, remova, sobrescreva ou contorne o script padrão de abertura de PR. O fluxo existente é a fonte de verdade do repositório.
+
+Se existir um script oficial para abrir o PR:
+
+1. use esse script em vez de criar um fluxo paralelo;
+2. preserve todos os campos, seções e checklists definidos por ele;
+3. informe a categoria `ship`, `show` ou `ask` no formato esperado pelo repositório;
+4. preserve a label correspondente;
+5. preserve as regras de auto-merge;
+6. para `ask`, mantenha o auto-merge desabilitado;
+7. não remova ou altere o template para simplificar a abertura.
+
+A skill pode preencher o template e acrescentar informações necessárias, mas não deve alterar sua estrutura padrão. Se o script ou template não permitir incluir alguma informação necessária, pare e informe a incompatibilidade. Não crie uma alternativa silenciosa nem abra o PR ignorando o fluxo oficial.
+
 Execute:
 
 ```bash
@@ -111,6 +135,8 @@ Se existir, reutilize-o. Caso contrário, gere um corpo objetivo com resumo, tes
 gh pr create --base <default-branch> --head <current-branch> --title "<title>" --body "<body>"
 ```
 
+Use `gh pr create` diretamente somente quando o repositório não possuir um script ou mecanismo oficial de abertura de PR. Quando existir um mecanismo oficial, execute-o e preserve seu template, checklist, categoria e regras de auto-merge.
+
 O título deve ser derivado dos commits da branch. O corpo deve registrar honestamente os testes executados; não declare testes que não foram executados.
 
 ### 5. Aguardar a pipeline
@@ -153,7 +179,51 @@ Somente comentários acionáveis ou bloqueantes impedem a notificação. Coment�
 
 Não responda, resolva nem altere código por causa de comentários acionáveis. Apresente-os ao usuário para decisão, encerre sem enviar Teams e aguarde uma nova execução da skill depois que forem resolvidos. Se todos os comentários forem informativos/aprovados, continue para a notificação automática.
 
-### 7. Notificação automática do Teams
+### 7. Findings nos arquivos alterados
+
+Depois de consultar comentários gerais, reviews e comentários inline, inspecione também os findings associados aos arquivos alterados e visíveis na aba **Files changed**.
+
+A ausência de comentários retornados pela API de comentários inline não prova que não existem findings em arquivos alterados. Consulte, quando disponíveis:
+
+```bash
+gh api repos/{owner}/{repo}/pulls/<number>/comments
+gh api repos/{owner}/{repo}/commits/<head-sha>/check-runs
+gh api repos/{owner}/{repo}/check-runs/<check-run-id>/annotations
+```
+
+Quando houver permissão e alertas de GitHub Code Scanning:
+
+```bash
+gh api "repos/{owner}/{repo}/code-scanning/alerts?ref=<head-sha>"
+```
+
+A API de Code Scanning pode não conter findings do SonarCloud. Para SonarCloud, siga o link presente no comentário geral, no check ou no relatório da pipeline e consulte o finding diretamente na ferramenta.
+
+Inclua todos os findings visíveis nos arquivos alterados, mesmo quando eles não aparecerem como comentários comuns do Pull Request.
+
+Para cada finding, informe:
+
+- ferramenta;
+- arquivo e linha ou intervalo de linhas;
+- severidade;
+- regra ou categoria;
+- mensagem completa;
+- URL direta do finding, quando disponível;
+- status: informativo, aceito, resolvido ou acionável;
+- próxima ação recomendada.
+
+Trate o resultado geral do Quality Gate separadamente dos findings individuais:
+
+- `Quality Gate passed` não prova que não existem findings;
+- um Quality Gate pode passar mesmo com novos issues não bloqueantes;
+- findings aceitos, resolvidos ou explicitamente informativos não bloqueiam;
+- findings novos e não aceitos em código alterado devem ser reportados;
+- bugs, vulnerabilidades, security hotspots e problemas de confiabilidade ou manutenibilidade não aceitos são acionáveis;
+- se o status de um finding não puder ser determinado, classifique-o como pendente de inspeção e não envie o Teams.
+
+Se houver finding acionável, não aceito ou sem status conhecido, apresente o diagnóstico, a URL e a próxima ação, encerre sem enviar Teams e aguarde uma nova execução da skill depois da resolução.
+
+### 8. Notificação automática do Teams
 
 Só execute esta etapa se todas as anteriores tiverem terminado com sucesso:
 
@@ -162,6 +232,7 @@ Só execute esta etapa se todas as anteriores tiverem terminado com sucesso:
 - PR criado ou reutilizado;
 - todos os checks aprovados;
 - nenhum comentário acionável ou bloqueante pendente do Copilot ou Sonar;
+- nenhum finding acionável, não aceito ou sem status conhecido nos arquivos alterados;
 - nenhuma interrupção, falha ou conflito.
 
 Se `TEAMS_WEBHOOK_URL` não estiver configurada, informe que o PR foi concluído, mas a notificação foi omitida. Não trate a ausência do webhook como falha do PR.
@@ -240,6 +311,7 @@ Em caso de sucesso, informe:
 - resultado dos checks;
 - quantidade de comentários Copilot/Sonar encontrados;
 - conteúdo desses comentários;
+- findings encontrados nos arquivos alterados, sua classificação e próxima ação;
 - categoria (`ship`, `show` ou `ask`), tipo do projeto e resultado da notificação do Teams.
 
 Se houver qualquer bloqueio, informe o estado exato e a próxima ação necessária. Nunca diga que o PR está pronto quando houver check falho, conflito pendente ou push incompleto.

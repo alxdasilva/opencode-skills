@@ -12,7 +12,7 @@ Verifica se a branch atual está atrás de `main`, sem alterar o working tree.
 
 Faz o rebase da branch atual com a branch padrão, publica a branch, abre ou reutiliza o Pull Request, aguarda os checks, lista comentários automatizados do GitHub Copilot e Sonar e notifica o Teams somente quando todos os gates passam.
 
-O fluxo executa rebase, push e criação do PR automaticamente quando solicitado. Ele para em conflitos, falhas de push, falhas de autenticação, checks falhos ou comentários automatizados acionáveis pendentes. Comentários positivos do Copilot e Quality Gates aprovados do Sonar são informados, mas não bloqueiam a notificação. A categoria pode ser informada, por exemplo, com `@{open-pr} show`.
+O fluxo executa rebase, push e criação do PR automaticamente quando solicitado. Ele respeita scripts, templates, labels e checklists oficiais do repositório, incluindo a categoria Ship/Show/Ask. Para quando há conflitos, falhas de push, falhas de autenticação, checks falhos, comentários automatizados acionáveis ou findings não classificados nos arquivos alterados. Comentários positivos do Copilot, Quality Gates aprovados do Sonar e findings aceitos/resolvidos são informados, mas não bloqueiam a notificação. A categoria pode ser informada, por exemplo, com `@{open-pr} show`.
 
 ### `teams-notify`
 
